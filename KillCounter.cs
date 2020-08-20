@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Forms;
 using ExileCore;
 using ExileCore.PoEMemory.Components;
@@ -20,6 +21,93 @@ namespace KillCounter
         private Dictionary<MonsterRarity, int> counters;
         private int sessionCounter;
         private int summaryCounter;
+
+
+        private List<string> Ignored = new List<string>
+        {
+            "Metadata/Monsters/LeagueAffliction/Volatile/AfflictionVolatile",
+            "Metadata/Monsters/VolatileCore/VolatileCore",
+            
+            // Delirium Ignores
+            "Metadata/Monsters/LeagueAffliction/DoodadDaemons/DoodadDaemonEyes1",
+            "Metadata/Monsters/LeagueAffliction/DoodadDaemons/DoodadDaemonEyes2",
+            "Metadata/Monsters/LeagueAffliction/DoodadDaemons/DoodadDaemonEyes3",
+            "Metadata/Monsters/LeagueAffliction/DoodadDaemons/DoodadDaemonSpikes",
+            "Metadata/Monsters/LeagueAffliction/DoodadDaemons/DoodadDaemonSpikes2",
+            "Metadata/Monsters/LeagueAffliction/DoodadDaemons/DoodadDaemonSpikes3",
+            "Metadata/Monsters/LeagueAffliction/DoodadDaemons/DoodadDaemonPimple1",
+            "Metadata/Monsters/LeagueAffliction/DoodadDaemons/DoodadDaemonPimple2",
+            "Metadata/Monsters/LeagueAffliction/DoodadDaemons/DoodadDaemonPimple3",
+            "Metadata/Monsters/LeagueAffliction/DoodadDaemons/DoodadDaemonGoatFillet1Vanish",
+            "Metadata/Monsters/LeagueAffliction/DoodadDaemons/DoodadDaemonGoatFillet2Vanish",
+            "Metadata/Monsters/LeagueAffliction/DoodadDaemons/DoodadDaemonGoatRhoa1Vanish",
+            "Metadata/Monsters/LeagueAffliction/DoodadDaemons/DoodadDaemonGoatRhoa2Vanish",
+            
+            // Conquerors Ignores
+            "Metadata/Monsters/AtlasExiles/AtlasExile1@",
+            "Metadata/Monsters/AtlasExiles/CrusaderInfluenceMonsters/CrusaderArcaneRune",
+            "Metadata/Monsters/AtlasExiles/AtlasExile2_",
+            "Metadata/Monsters/AtlasExiles/EyrieInfluenceMonsters/EyrieFrostnadoDaemon",
+            "Metadata/Monsters/AtlasExiles/AtlasExile3@",
+            "Metadata/Monsters/AtlasExiles/AtlasExile3AcidPitDaemon",
+            "Metadata/Monsters/AtlasExiles/AtlasExile3BurrowingViperMelee",
+            "Metadata/Monsters/AtlasExiles/AtlasExile3BurrowingViperRanged",
+            "Metadata/Monsters/AtlasExiles/AtlasExile4@",
+            "Metadata/Monsters/AtlasExiles/AtlasExile4ApparitionCascade",
+            "Metadata/Monsters/AtlasExiles/AtlasExile5Apparition",
+            "Metadata/Monsters/AtlasExiles/AtlasExile5Throne",
+
+            // Incursion Ignores
+            "Metadata/Monsters/LeagueIncursion/VaalSaucerRoomTurret",
+            "Metadata/Monsters/LeagueIncursion/VaalSaucerTurret",
+            "Metadata/Monsters/LeagueIncursion/VaalSaucerTurret",
+            
+            // Betrayal Ignores
+            "Metadata/Monsters/LeagueBetrayal/BetrayalTaserNet",
+            "Metadata/Monsters/LeagueBetrayal/FortTurret/FortTurret1Safehouse",
+            "Metadata/Monsters/LeagueBetrayal/FortTurret/FortTurret1",
+            "Metadata/Monsters/LeagueBetrayal/MasterNinjaCop",
+
+            // Legion Ignores
+            "Metadata/Monsters/LegionLeague/LegionVaalGeneralProjectileDaemon",
+            "Metadata/Monsters/LegionLeague/LegionSergeantStampedeDaemon",
+            "Metadata/Monsters/LegionLeague/LegionSandTornadoDaemon",
+
+            // Random Ignores
+            "Metadata/Monsters/InvisibleFire/InvisibleSandstorm_",
+            "Metadata/Monsters/InvisibleFire/InvisibleFrostnado",
+            "Metadata/Monsters/InvisibleFire/InvisibleFireAfflictionDemonColdDegen",
+            "Metadata/Monsters/InvisibleFire/InvisibleFireAfflictionDemonColdDegenUnique",
+            "Metadata/Monsters/InvisibleFire/InvisibleFireAfflictionCorpseDegen",
+            "Metadata/Monsters/InvisibleFire/InvisibleFireEyrieHurricane",
+            "Metadata/Monsters/InvisibleFire/InvisibleIonCannonFrost",
+            "Metadata/Monsters/InvisibleFire/AfflictionBossFinalDeathZone",
+
+            "Metadata/Monsters/InvisibleCurse/InvisibleFrostbiteStationary",
+            "Metadata/Monsters/InvisibleCurse/InvisibleConductivityStationary",
+            "Metadata/Monsters/InvisibleCurse/InvisibleEnfeeble",
+
+            "Metadata/Monsters/InvisibleAura/InvisibleWrathStationary",
+
+            "Metadata/Monsters/LeagueSynthesis/SynthesisDroneBossTurret1",
+            "Metadata/Monsters/LeagueSynthesis/SynthesisDroneBossTurret2",
+            "Metadata/Monsters/LeagueSynthesis/SynthesisDroneBossTurret3",
+            "Metadata/Monsters/LeagueSynthesis/SynthesisDroneBossTurret4",
+
+            "Metadata/Monsters/LeagueBestiary/RootSpiderBestiaryAmbush",
+            "Metadata/Monsters/LeagueBestiary/BlackScorpionBestiaryBurrowTornado",
+
+            // "Metadata/Monsters/Labyrinth/GoddessOfJustice",
+            // "Metadata/Monsters/Labyrinth/GoddessOfJusticeMapBoss",
+            "Metadata/Monsters/Frog/FrogGod/SilverOrb",
+            "Metadata/Monsters/Frog/FrogGod/SilverPool",
+            "Metadata/Monsters/LunarisSolaris/SolarisCelestialFormAmbushUniqueMap",
+            "Metadata/Monsters/Invisible/MaligaroSoulInvisibleBladeVortex",
+            "Metadata/Monsters/Daemon",
+            "Metadata/Monsters/Daemon/MaligaroBladeVortexDaemon",
+            "Metadata/Monsters/Daemon/SilverPoolChillDaemon",
+            "Metadata/Monsters/AvariusCasticus/AvariusCasticusStatue",
+        };
 
         public override bool Initialise()
         {
@@ -69,6 +157,7 @@ namespace KillCounter
             foreach (var entity in GameController.EntityListWrapper.ValidEntitiesByType[EntityType.Monster])
             {
                 if (entity.IsAlive) continue;
+                if (Ignored.Any(x => entity.Path.StartsWith(x))) continue;
                 Calc(entity);
             }
         }
