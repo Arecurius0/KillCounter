@@ -21,6 +21,7 @@ namespace KillCounter
         private Dictionary<MonsterRarity, int> counters;
         private int sessionCounter;
         private int summaryCounter;
+        private int scourgeRareCounter;
 
 
         private List<string> Ignored = new List<string>
@@ -131,6 +132,7 @@ namespace KillCounter
             {
                 counters[rarity] = 0;
             }
+            scourgeRareCounter = 0;
         }
 
         public override void AreaChange(AreaInstance area)
@@ -140,6 +142,7 @@ namespace KillCounter
             counters.Clear();
             sessionCounter += summaryCounter;
             summaryCounter = 0;
+            scourgeRareCounter = 0;
             Init();
         }
 
@@ -201,7 +204,9 @@ namespace KillCounter
         {
             const int INNER_MARGIN = 15;
             position.Y += 5;
-            var drawText = Graphics.DrawText(counters[MonsterRarity.White].ToString(), position, Color.White, FontAlign.Right);
+            var drawText = Graphics.DrawText(scourgeRareCounter.ToString(), position, Settings.ScourgeRareCounterColor, FontAlign.Right);
+            position.X -= INNER_MARGIN + drawText.X;
+            drawText = Graphics.DrawText(counters[MonsterRarity.White].ToString(), position, Color.White, FontAlign.Right);
             position.X -= INNER_MARGIN + drawText.X;
             drawText = Graphics.DrawText(counters[MonsterRarity.Magic].ToString(), position, HudSkin.MagicColor, FontAlign.Right);
             position.X -= INNER_MARGIN + drawText.X;
@@ -236,9 +241,12 @@ namespace KillCounter
 
                 if (Entity.IsHostile && rarity >= MonsterRarity.White && rarity <= MonsterRarity.Unique)
                 {
+                    if (Entity.Path.StartsWith("Metadata/Monsters/LeagueHellscape") && rarity == MonsterRarity.Rare)
+                        scourgeRareCounter++;
                     counters[rarity]++;
                     summaryCounter++;
                 }
+                
             }
         }
     }
@@ -251,6 +259,7 @@ namespace KillCounter
             ShowInTown = new ToggleNode(false);
             TextColor = new ColorBGRA(220, 190, 130, 255);
             BackgroundColor = new ColorBGRA(0, 0, 0, 255);
+            ScourgeRareCounterColor = new ColorBGRA(0, 0, 0, 255);
             LabelTextSize = new RangeNode<int>(16, 10, 20);
             KillsTextSize = new RangeNode<int>(16, 10, 20);
         }
@@ -259,6 +268,7 @@ namespace KillCounter
         public ToggleNode ShowDetail { get; set; }
         public ColorNode TextColor { get; set; }
         public ColorNode BackgroundColor { get; set; }
+        public ColorNode ScourgeRareCounterColor { get; set; }
         public RangeNode<int> LabelTextSize { get; set; }
         public RangeNode<int> KillsTextSize { get; set; }
         public ToggleNode UseImguiForDraw { get; set; } = new ToggleNode(true);
